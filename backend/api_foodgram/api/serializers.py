@@ -1,11 +1,26 @@
 from rest_framework import serializers
+
 from django.db.models import F
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
+from drf_extra_fields.fields import Base64ImageField
 from djoser.serializers import UserCreateSerializer, UserSerializer
 
 from recipes.models import Ingredient, Recipe, Tag
 from users.models import User, Subscribe
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
+        read_only_fields = '__all__',
 
 
 class UserReadSerializer(UserSerializer):
@@ -37,37 +52,14 @@ class UserCreateSerializer(UserCreateSerializer):
             'email': {'required': True, 'allow_blank': False},
         }
 
-    def validate(self, obj):
-        invalid_usernames = ['me', 'set_password',
-                             'subscriptions', 'subscribe']
-        if self.initial_data.get('username') in invalid_usernames:
-            raise serializers.ValidationError(
-                {'username': 'Вы не можете использовать этот username.'}
-            )
-        return obj
-
-
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
-        read_only_fields = '__all__',
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ingredient
-        fields = '__all__'
-        read_only_fields = '__all__',
-
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True)
-    ingredients = IngredientSerializer(many=True)
-    is_favorite = serializers.BooleanField()
-    is_in_shopping_list = serializers.BooleanField()
-    image = serializers.ImageField(use_url=True)
+    author = UserReadSerializer(read_only=True)
+    ingredients = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -77,11 +69,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             "author",
             "ingredients",
             "is_favorited",
-            "is_in_shopping_list",
+            "is_in_shopping_cart",
             "name",
             "image",
             "text",
             "cooking_time",
+        )
+        read_only_fields = (
+            'is_favorite',
+            'is_shopping_cart',
         )
 
     def get_ingredients(self, recipe):
@@ -128,7 +124,7 @@ class SetPasswordSerializer(serializers.Serializer):
             )
         instance.set_password(validated_data['new_password'])
         instance.save()
-        return
+        return validated_data
 
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
@@ -176,11 +172,6 @@ class SubscribeAuthorSerializer(serializers.ModelSerializer):
                   'username', 'first_name',
                   'last_name', 'is_subscribed',
                   'recipes', 'recipes_count')
-
-    def validate(self, obj):
-        if (self.context['request'].user == obj):
-            raise serializers.ValidationError({'errors': 'Ошибка подписки.'})
-        return obj
 
     def get_is_subscribed(self, obj):
         return (

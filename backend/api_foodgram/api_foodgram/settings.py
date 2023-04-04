@@ -11,6 +11,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'yfz7$u3i)+@-cyrp5bfb-j3g-e429hr!d4a3ygb!=ex2&b$5tb'
 
+ALLOWED_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'HEAD',
+    'OPTIONS',
+]
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -21,8 +31,6 @@ ALLOWED_HOSTS = [
     'db',
     'frontend',
 ]
-
-ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 
 
 # Application definition
@@ -135,12 +143,6 @@ DJOSER = {
         'recipe_list': ('api.permissions.AuthorStaffOrReadOnly',),
         'user': ('api.permissions.OwnerUserOrReadOnly',),
         'user_list': ('api.permissions.OwnerUserOrReadOnly',),
-    },
-    'SERIALIZERS': {
-        'user': 'api.serializers.UserSerializer',
-        'user_list': 'api.serializers.UserSerializer',
-        'current_user': 'api.serializers.UserSerializer',
-        'user_create': 'api.serializers.UserSerializer',
     },
 }
 

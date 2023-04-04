@@ -217,11 +217,6 @@ class ShoppingCart(Model):
         related_name='carts',
         on_delete=CASCADE,
     )
-    date_added = DateTimeField(
-        verbose_name='Дата добавления',
-        auto_now_add=True,
-        editable=False
-    )
 
     class Meta:
         verbose_name = 'Рецепт в списке покупок'
