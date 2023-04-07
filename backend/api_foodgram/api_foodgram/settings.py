@@ -1,37 +1,22 @@
 import os
 from pathlib import Path
+from decouple import Csv, config
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'yfz7$u3i)+@-cyrp5bfb-j3g-e429hr!d4a3ygb!=ex2&b$5tb'
-
-ALLOWED_METHODS = [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'HEAD',
-    'OPTIONS',
-]
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'backend',
-    'db',
-    'frontend',
-]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost, http://127.0.0.1',
+    cast=Csv()
+)
 
 # Application definition
 
@@ -98,41 +83,37 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT')
     }
 }
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-"""
-AUTH_USER_MODEL = 'users.User'
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES':
+    ['rest_framework.authentication.TokenAuthentication', ],
+
+    'DEFAULT_PERMISSION_CLASSES':
+    ['rest_framework.permissions.IsAuthenticatedOrReadOnly', ],
 }
 
 DJOSER = {
@@ -144,10 +125,17 @@ DJOSER = {
         'user': ('api.permissions.OwnerUserOrReadOnly',),
         'user_list': ('api.permissions.OwnerUserOrReadOnly',),
     },
+    'SERIALIZERS': {
+        'user': 'api.serializers.UserSerializer',
+        'user_list': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+        'user_create': 'api.serializers.UserSerializer',
+    },
 }
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
+USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
@@ -161,7 +149,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_ADMIN = 'admin@example.com'
 
+# Important project variables:
+
+DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
+
 PAGE_NUMBER = 6
 
-EMAIL_MAX_LENGTH = 254
-USER_FIELD_LENGTH = 150
+MAX_LEN_EMAIL_FIELD = 256
+MAX_LEN_USERS_CHARFIELD = 32
+MIN_LEN_USERNAME = 3
+
+MAX_LEN_RECIPES_CHARFIELD = 64
+MAX_LEN_MEASUREMENT = 256
+MAX_LEN_RECIPES_TEXTFIELD = 5000
+
+MIN_COOKING_TIME = 1
+MAX_COOKING_TIME = 300
+MIN_AMOUNT_INGREDIENTS = 1
+MAX_AMOUNT_INGREDIENTS = 32
+
+SEARCH_ING_NAME = 'name'
+FAVORITE = 'is_favorited'
+SHOP_CART = 'is_in_shopping_cart'
+AUTHOR = 'author'
+TAGS = 'tags'

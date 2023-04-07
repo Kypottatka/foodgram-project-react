@@ -1,68 +1,83 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.db.models import (
+    CASCADE,
+    CharField,
+    CheckConstraint,
+    DateTimeField,
+    EmailField,
+    F, Q,
+    ForeignKey,
+    Model,
+    UniqueConstraint
+)
+from django.db.models.functions import Length
+
 from django.conf import settings
 
+CharField.register_lookup(Length)
 
-class User(AbstractUser):
-    email = models.EmailField(
-        verbose_name="Электронная почта",
-        max_length=settings.EMAIL_MAX_LENGTH,
+
+class CustomUser(AbstractUser):
+    email = EmailField(
+        verbose_name='Адрес электронной почты',
+        max_length=settings.MAX_LEN_EMAIL_FIELD,
         unique=True,
     )
-    username = models.CharField(
-        verbose_name="Никнейм пользователя",
-        max_length=settings.USER_FIELD_LENGTH,
+    username = CharField(
+        verbose_name='Уникальный юзернейм',
+        max_length=settings.MAX_LEN_USERS_CHARFIELD,
         unique=True,
-        validators=[UnicodeUsernameValidator()],
     )
-    first_name = models.CharField(
-        verbose_name="Имя",
-        max_length=settings.USER_FIELD_LENGTH,
-        blank=True,
+    first_name = CharField(
+        verbose_name='Имя',
+        max_length=settings.MAX_LEN_USERS_CHARFIELD,
     )
-    last_name = models.CharField(
-        verbose_name="Фамилия",
-        max_length=settings.USER_FIELD_LENGTH,
-        blank=True,
-    )
-    is_subscribed = models.BooleanField(
-        verbose_name="Подписка",
-        default=False,
+    last_name = CharField(
+        verbose_name='Фамилия',
+        max_length=settings.MAX_LEN_USERS_CHARFIELD,
     )
 
     class Meta:
-        ordering = ("username",)
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
 
     def __str__(self) -> str:
-        return self.username
+        return f'{self.username}: {self.email}'
 
 
-class Subscribe(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscriber',
-        verbose_name='Подписчик'
+class Subscriptions(Model):
+    author = ForeignKey(
+        verbose_name='Автор рецепта',
+        related_name='subscribers',
+        to=CustomUser,
+        on_delete=CASCADE,
     )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscribing',
-        verbose_name='Подписан'
+    user = ForeignKey(
+        verbose_name='Подписчики',
+        related_name='subscriptions',
+        to=CustomUser,
+        on_delete=CASCADE,
     )
-
-    def __str__(self):
-        return f'{self.user.username} - {self.author.username}'
+    date_added = DateTimeField(
+        verbose_name='Дата создания подписки',
+        auto_now_add=True,
+        editable=False
+    )
 
     class Meta:
-        verbose_name = 'Подписка на авторов'
-        verbose_name_plural = 'Подписки на авторов'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='unique_subscribe'
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = (
+            UniqueConstraint(
+                fields=('author', 'user'),
+                name='\nRepeat subscription\n',
+            ),
+            CheckConstraint(
+                check=~Q(author=F('user')),
+                name='\nNo self sibscription\n'
             )
-        ]
+        )
+
+    def __str__(self) -> str:
+        return f'{self.user.username} -> {self.author.username}'

@@ -1,13 +1,26 @@
-from django.db.models import (CASCADE, SET_NULL, CharField, CheckConstraint,
-                              DateTimeField, ForeignKey, ImageField,
-                              ManyToManyField, Model,
-                              PositiveSmallIntegerField, Q, TextField,
-                              UniqueConstraint)
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import (
+    CASCADE,
+    SET_NULL,
+    CharField,
+    CheckConstraint,
+    DateTimeField,
+    ForeignKey,
+    ImageField,
+    ManyToManyField,
+    Model,
+    PositiveSmallIntegerField,
+    Q,
+    TextField,
+    UniqueConstraint
+)
 from django.db.models.functions import Length
-from PIL import Image
-from django.conf import settings
 
-from users.models import User
+from PIL import Image
+
+from core.enums import Tuples
+from users.models import CustomUser
+from django.conf import settings
 
 CharField.register_lookup(Length)
 
@@ -15,7 +28,7 @@ CharField.register_lookup(Length)
 class Tag(Model):
     name = CharField(
         verbose_name='Тэг',
-        max_length=settings.USER_FIELD_LENGTH,
+        max_length=64,
         unique=True,
     )
     color = CharField(
@@ -26,7 +39,7 @@ class Tag(Model):
     )
     slug = CharField(
         verbose_name='Слаг тэга',
-        max_length=settings.USER_FIELD_LENGTH,
+        max_length=64,
         unique=True,
         db_index=False,
     )
@@ -43,7 +56,7 @@ class Tag(Model):
 class Ingredient(Model):
     name = CharField(
         verbose_name='Ингридиент',
-        max_length=settings.USER_FIELD_LENGTH,
+        max_length=settings.MAX_LEN_RECIPES_CHARFIELD,
     )
     measurement_unit = CharField(
         verbose_name='Единицы измерения',
@@ -69,17 +82,17 @@ class Ingredient(Model):
             ),
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f'{self.name} {self.measurement_unit}'
 
 
 class Recipe(Model):
     name = CharField(
         verbose_name='Название блюда',
-        max_length=settings.USER_FIELD_LENGTH,
+        max_length=settings.MAX_LEN_RECIPES_CHARFIELD,
     )
     author = ForeignKey(
-        User,
+        CustomUser,
         verbose_name='Автор рецепта',
         related_name='recipes',
         on_delete=SET_NULL,
@@ -107,11 +120,21 @@ class Recipe(Model):
     )
     text = TextField(
         verbose_name='Описание блюда',
-        max_length=settings.USER_FIELD_LENGTH,
+        max_length=settings.MAX_LEN_RECIPES_TEXTFIELD,
     )
     cooking_time = PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         default=0,
+        validators=(
+            MinValueValidator(
+                settings.MIN_COOKING_TIME,
+                'Ваше блюдо уже готово!',
+            ),
+            MaxValueValidator(
+                settings.MAX_COOKING_TIME,
+                'Очень долго ждать...',
+            ),
+        ),
     )
 
     class Meta:
@@ -129,12 +152,13 @@ class Recipe(Model):
             ),
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f'{self.name}. Автор: {self.author.username}'
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         image = Image.open(self.image.path)
+        image = image.resize(Tuples.RECIPE_IMAGE_SIZE)
         image.save(self.image.path)
 
 
@@ -154,6 +178,16 @@ class AmountIngredient(Model):
     amount = PositiveSmallIntegerField(
         verbose_name='Количество',
         default=0,
+        validators=(
+            MinValueValidator(
+                settings.MIN_AMOUNT_INGREDIENTS,
+                'Нужно хоть какое-то количество.',
+            ),
+            MaxValueValidator(
+                settings.MAX_AMOUNT_INGREDIENTS,
+                'Слишком много!',
+            ),
+        ),
     )
 
     class Meta:
@@ -163,11 +197,11 @@ class AmountIngredient(Model):
         constraints = (
             UniqueConstraint(
                 fields=('recipe', 'ingredients', ),
-                name='\n%(app_label)s_%(class)s ingredient is added\n',
+                name='\n%(app_label)s_%(class)s ingredient alredy added\n',
             ),
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f'{self.amount} {self.ingredients}'
 
 
@@ -179,7 +213,7 @@ class Favorite(Model):
         on_delete=CASCADE,
     )
     user = ForeignKey(
-        User,
+        CustomUser,
         verbose_name='Пользователь',
         related_name='favorites',
         on_delete=CASCADE,
@@ -196,11 +230,11 @@ class Favorite(Model):
         constraints = (
             UniqueConstraint(
                 fields=('recipe', 'user', ),
-                name='\n%(app_label)s_%(class)s recipe is in favorites\n',
+                name='\n%(app_label)s_%(class)s recipe is favorite alredy\n',
             ),
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f'{self.user} -> {self.recipe}'
 
 
@@ -212,10 +246,15 @@ class ShoppingCart(Model):
         on_delete=CASCADE,
     )
     user = ForeignKey(
-        User,
+        CustomUser,
         verbose_name='Владелец списка',
         related_name='carts',
         on_delete=CASCADE,
+    )
+    date_added = DateTimeField(
+        verbose_name='Дата добавления',
+        auto_now_add=True,
+        editable=False
     )
 
     class Meta:
@@ -224,9 +263,9 @@ class ShoppingCart(Model):
         constraints = (
             UniqueConstraint(
                 fields=('recipe', 'user', ),
-                name='\n%(app_label)s_%(class)s recipe is shopping cart\n',
+                name='\n%(app_label)s_%(class)s recipe is cart alredy\n',
             ),
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f'{self.user} -> {self.recipe}'

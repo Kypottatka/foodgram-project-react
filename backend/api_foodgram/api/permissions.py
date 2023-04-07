@@ -1,14 +1,13 @@
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Model
 from rest_framework.permissions import SAFE_METHODS, BasePermission
-from rest_framework.routers import APIRootView
 
 
 class BanPermission(BasePermission):
     def has_permission(
         self,
         request: WSGIRequest,
-        view: APIRootView
+        view
     ) -> bool:
         return bool(
             request.method in SAFE_METHODS
@@ -21,7 +20,7 @@ class AuthorStaffOrReadOnly(BanPermission):
     def has_object_permission(
         self,
         request: WSGIRequest,
-        view: APIRootView,
+        view,
         obj: Model
     ) -> bool:
         return (
@@ -39,7 +38,7 @@ class AdminOrReadOnly(BanPermission):
     def has_object_permission(
         self,
         request: WSGIRequest,
-        view: APIRootView
+        view
     ) -> bool:
         return (
             request.method in SAFE_METHODS
@@ -53,7 +52,7 @@ class OwnerUserOrReadOnly(BanPermission):
     def has_object_permission(
         self,
         request: WSGIRequest,
-        view: APIRootView,
+        view,
         obj: Model
     ) -> bool:
         return (
