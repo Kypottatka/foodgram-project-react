@@ -7,14 +7,14 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from core.services import recipe_ingredients_set
 from recipes.models import Ingredient, Recipe, Tag
-from users.models import CustomUser
+from users.models import User
 
 
 class UserSerializer(ModelSerializer):
     is_subscribed = SerializerMethodField()
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = (
             'id',
             'email',
@@ -34,7 +34,7 @@ class UserSerializer(ModelSerializer):
         return user.subscriptions.filter(author=obj).exists()
 
     def create(self, validated_data):
-        user = CustomUser(
+        user = User(
             email=validated_data['email'],
             username=validated_data['username'],
             first_name=validated_data['first_name'],
@@ -179,7 +179,7 @@ class SubscriptionSerializer(UserSerializer):
     recipes_count = SerializerMethodField()
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = (
             'id',
             'email',

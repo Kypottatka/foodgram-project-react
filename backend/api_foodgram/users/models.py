@@ -17,7 +17,7 @@ from django.conf import settings
 CharField.register_lookup(Length)
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     email = EmailField(
         verbose_name='Адрес электронной почты',
         max_length=settings.MAX_LEN_EMAIL_FIELD,
@@ -50,13 +50,13 @@ class Subscriptions(Model):
     author = ForeignKey(
         verbose_name='Автор рецепта',
         related_name='subscribers',
-        to=CustomUser,
+        to=User,
         on_delete=CASCADE,
     )
     user = ForeignKey(
         verbose_name='Подписчики',
         related_name='subscriptions',
-        to=CustomUser,
+        to=User,
         on_delete=CASCADE,
     )
     date_added = DateTimeField(

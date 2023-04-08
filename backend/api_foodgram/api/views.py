@@ -30,7 +30,7 @@ from api.serializers import (
 )
 from core.enums import Tuples, UrlQueries
 from recipes.models import ShoppingCart, Favorite, Ingredient, Recipe, Tag
-from users.models import Subscriptions, CustomUser
+from users.models import Subscriptions, User
 
 from django.conf import settings
 
@@ -45,7 +45,7 @@ class UserViewSet(DjoserUserViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, id):
-        author = get_object_or_404(CustomUser, id=id)
+        author = get_object_or_404(User, id=id)
         user = request.user
         subscription = Subscriptions.objects.filter(user=user, author=author)
 
@@ -69,7 +69,7 @@ class UserViewSet(DjoserUserViewSet):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         pages = self.paginate_queryset(
-            CustomUser.objects.filter(subscribers__user=request.user)
+            User.objects.filter(subscribers__user=request.user)
         )
         serializer = SubscriptionSerializer(pages, many=True)
         return self.get_paginated_response(serializer.data)

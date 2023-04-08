@@ -5,7 +5,7 @@ from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='string_from_.env')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,7 +84,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -162,6 +162,7 @@ MIN_LEN_USERNAME = 3
 MAX_LEN_RECIPES_CHARFIELD = 64
 MAX_LEN_MEASUREMENT = 256
 MAX_LEN_RECIPES_TEXTFIELD = 5000
+MAX_LEN_TAGS_CHARFIELD = 64
 
 MIN_COOKING_TIME = 1
 MAX_COOKING_TIME = 300

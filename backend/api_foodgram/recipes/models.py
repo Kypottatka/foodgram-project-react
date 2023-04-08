@@ -19,7 +19,7 @@ from django.db.models.functions import Length
 from PIL import Image
 
 from core.enums import Tuples
-from users.models import CustomUser
+from users.models import User
 from django.conf import settings
 
 CharField.register_lookup(Length)
@@ -28,7 +28,7 @@ CharField.register_lookup(Length)
 class Tag(Model):
     name = CharField(
         verbose_name='Тэг',
-        max_length=64,
+        max_length=settings.MAX_LEN_TAGS_CHARFIELD,
         unique=True,
     )
     color = CharField(
@@ -92,7 +92,7 @@ class Recipe(Model):
         max_length=settings.MAX_LEN_RECIPES_CHARFIELD,
     )
     author = ForeignKey(
-        CustomUser,
+        User,
         verbose_name='Автор рецепта',
         related_name='recipes',
         on_delete=SET_NULL,
@@ -213,7 +213,7 @@ class Favorite(Model):
         on_delete=CASCADE,
     )
     user = ForeignKey(
-        CustomUser,
+        User,
         verbose_name='Пользователь',
         related_name='favorites',
         on_delete=CASCADE,
@@ -246,7 +246,7 @@ class ShoppingCart(Model):
         on_delete=CASCADE,
     )
     user = ForeignKey(
-        CustomUser,
+        User,
         verbose_name='Владелец списка',
         related_name='carts',
         on_delete=CASCADE,
