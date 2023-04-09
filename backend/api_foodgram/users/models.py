@@ -11,7 +11,6 @@ from django.db.models import (
     UniqueConstraint
 )
 from django.db.models.functions import Length
-
 from django.conf import settings
 
 CharField.register_lookup(Length)

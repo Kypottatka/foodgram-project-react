@@ -1,4 +1,8 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db.models import (
     CASCADE,
     SET_NULL,
@@ -36,6 +40,12 @@ class Tag(Model):
         max_length=7,
         unique=True,
         db_index=False,
+        validators=[
+            RegexValidator(
+                '^#([a-fA-F0-9]{6})',
+                message='Поле должно содержать HEX-код выбранного цвета.'
+            )
+        ]
     )
     slug = CharField(
         verbose_name='Слаг тэга',
@@ -107,7 +117,7 @@ class Recipe(Model):
         Ingredient,
         verbose_name='Ингредиенты блюда',
         related_name='recipes',
-        through='recipes.AmountIngredient',
+        through='AmountIngredient',
     )
     pub_date = DateTimeField(
         verbose_name='Дата публикации',
@@ -172,7 +182,7 @@ class AmountIngredient(Model):
     ingredients = ForeignKey(
         Ingredient,
         verbose_name='Связанные ингредиенты',
-        related_name='recipe',
+        related_name='+',
         on_delete=CASCADE,
     )
     amount = PositiveSmallIntegerField(
