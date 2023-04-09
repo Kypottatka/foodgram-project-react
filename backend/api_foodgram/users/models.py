@@ -1,17 +1,9 @@
-from django.contrib.auth.models import AbstractUser
-from django.db.models import (
-    CASCADE,
-    CharField,
-    CheckConstraint,
-    DateTimeField,
-    EmailField,
-    F, Q,
-    ForeignKey,
-    Model,
-    UniqueConstraint
-)
-from django.db.models.functions import Length
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.db.models import (CASCADE, CharField, CheckConstraint,
+                              DateTimeField, EmailField, F, ForeignKey, Model,
+                              Q, UniqueConstraint)
+from django.db.models.functions import Length
 
 from core.validators import UserFieldsValidator
 

@@ -1,40 +1,27 @@
 from datetime import datetime as dt
 
+from django.conf import settings
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet as DjoserUserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
-
+from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import (AllowAny, DjangoModelPermissions,
+                                        IsAuthenticated)
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.permissions import (
-    IsAuthenticated,
-    AllowAny,
-    DjangoModelPermissions,
-)
 
 from api.pagination import CustomPagination
-from api.permissions import (
-    AdminOrReadOnly,
-    AuthorStaffOrReadOnly,
-)
-from api.serializers import (
-    IngredientSerializer,
-    RecipeSerializer,
-    OptimizedRecipeSerializer,
-    TagSerializer,
-    SubscriptionSerializer,
-    UserSerializer
-)
+from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
+from api.serializers import (IngredientSerializer, OptimizedRecipeSerializer,
+                             RecipeSerializer, SubscriptionSerializer,
+                             TagSerializer, UserSerializer)
 from core.enums import Tuples, UrlQueries
-from recipes.models import ShoppingCart, Favorite, Ingredient, Recipe, Tag
-from users.models import Subscriptions, User
 from core.filters import RecipeFilter
-
-from django.conf import settings
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from users.models import Subscriptions, User
 
 
 class UserViewSet(DjoserUserViewSet):

@@ -1,30 +1,16 @@
-from django.core.validators import (
-    MaxValueValidator,
-    MinValueValidator,
-    RegexValidator,
-)
-from django.db.models import (
-    CASCADE,
-    SET_NULL,
-    CharField,
-    CheckConstraint,
-    DateTimeField,
-    ForeignKey,
-    ImageField,
-    ManyToManyField,
-    Model,
-    PositiveSmallIntegerField,
-    Q,
-    TextField,
-    UniqueConstraint
-)
+from django.conf import settings
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
+from django.db.models import (CASCADE, SET_NULL, CharField, CheckConstraint,
+                              DateTimeField, ForeignKey, ImageField,
+                              ManyToManyField, Model,
+                              PositiveSmallIntegerField, Q, TextField,
+                              UniqueConstraint)
 from django.db.models.functions import Length
-
 from PIL import Image
 
 from core.enums import Tuples
 from users.models import User
-from django.conf import settings
 
 CharField.register_lookup(Length)
 

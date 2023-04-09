@@ -1,8 +1,4 @@
-from recipes.models import (
-    AmountIngredient,
-    Recipe,
-    Ingredient,
-)
+from recipes.models import AmountIngredient, Ingredient, Recipe
 
 
 def recipe_ingredients_set(
