@@ -91,10 +91,6 @@ class RecipeSerializer(ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
         )
-        read_only_fields = (
-            'is_favorited',
-            'is_in_shopping_cart',
-        )
 
     def get_ingredients(self, recipe):
         ingredients = recipe.ingredients.values(

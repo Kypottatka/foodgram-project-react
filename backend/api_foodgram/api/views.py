@@ -4,6 +4,7 @@ from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DjoserUserViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -31,6 +32,7 @@ from api.serializers import (
 from core.enums import Tuples, UrlQueries
 from recipes.models import ShoppingCart, Favorite, Ingredient, Recipe, Tag
 from users.models import Subscriptions, User
+from core.filters import RecipeFilter
 
 from django.conf import settings
 
@@ -128,57 +130,8 @@ class RecipeViewSet(ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = CustomPagination
-
-    def get_queryset(self):
-        return self.apply_filters(self.queryset)
-
-    def apply_filters(self, queryset):
-        queryset = self.filter_by_tags(queryset)
-        queryset = self.filter_by_author(queryset)
-        queryset = self.filter_by_shop_cart(queryset)
-        queryset = self.filter_by_favorite(queryset)
-        return queryset
-
-    def filter_by_tags(self, queryset):
-        tags = self.request.query_params.getlist(UrlQueries.TAGS.value)
-        if tags:
-            queryset = queryset.filter(
-                tags__slug__in=tags).distinct()
-        return queryset
-
-    def filter_by_author(self, queryset):
-        author = self.request.query_params.get(UrlQueries.AUTHOR.value)
-        if author:
-            queryset = queryset.filter(author=author)
-        return queryset
-
-    def filter_by_shop_cart(self, queryset):
-        if self.request.user.is_anonymous:
-            return queryset
-
-        shop_cart = self.request.query_params.get(UrlQueries.SHOP_CART)
-
-        if shop_cart in Tuples.SYMBOL_TRUE_SEARCH.value:
-            queryset = queryset.filter(in_carts__user=self.request.user)
-
-        elif shop_cart in Tuples.SYMBOL_FALSE_SEARCH.value:
-            queryset = queryset.exclude(in_carts__user=self.request.user)
-
-        return queryset
-
-    def filter_by_favorite(self, queryset):
-        if self.request.user.is_anonymous:
-            return queryset
-
-        favorite = self.request.query_params.get(UrlQueries.FAVORITE)
-
-        if favorite in Tuples.SYMBOL_TRUE_SEARCH.value:
-            queryset = queryset.filter(in_favorites__user=self.request.user)
-
-        elif favorite in Tuples.SYMBOL_FALSE_SEARCH.value:
-            queryset = queryset.exclude(in_favorites__user=self.request.user)
-
-        return queryset
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     @action(
         methods=Tuples.ACTION_METHODS,

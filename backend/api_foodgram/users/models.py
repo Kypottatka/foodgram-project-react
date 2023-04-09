@@ -13,6 +13,8 @@ from django.db.models import (
 from django.db.models.functions import Length
 from django.conf import settings
 
+from core.validators import UserFieldsValidator
+
 CharField.register_lookup(Length)
 
 
@@ -26,14 +28,27 @@ class User(AbstractUser):
         verbose_name='Уникальный юзернейм',
         max_length=settings.MAX_LEN_USERS_CHARFIELD,
         unique=True,
+        validators=(
+            UserFieldsValidator(field='username'),
+        ),
     )
     first_name = CharField(
         verbose_name='Имя',
         max_length=settings.MAX_LEN_USERS_CHARFIELD,
+        validators=(UserFieldsValidator(
+            first_regex='[^а-яёА-ЯЁ -]+',
+            second_regex='[^a-zA-Z -]+',
+            field='Имя'),
+        ),
     )
     last_name = CharField(
         verbose_name='Фамилия',
         max_length=settings.MAX_LEN_USERS_CHARFIELD,
+        validators=(UserFieldsValidator(
+            first_regex='[^а-яёА-ЯЁ -]+',
+            second_regex='[^a-zA-Z -]+',
+            field='Имя'),
+        ),
     )
 
     class Meta:
