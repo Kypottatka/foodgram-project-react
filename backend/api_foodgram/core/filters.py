@@ -1,9 +1,17 @@
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import FilterSet, filters
+from django_filters.rest_framework import CharFilter, FilterSet, filters
 
-from recipes.models import Recipe, Tag
+from recipes.models import Recipe, Tag, Ingredient
 
 User = get_user_model()
+
+
+class IngredientFilter(FilterSet):
+    name = CharFilter(field_name='name', lookup_expr='icontains')
+
+    class Meta:
+        model = Ingredient
+        fields = ['name']
 
 
 class RecipeFilter(FilterSet):

@@ -28,8 +28,7 @@ class User(AbstractUser):
         verbose_name='Имя',
         max_length=settings.MAX_LEN_USERS_CHARFIELD,
         validators=(UserFieldsValidator(
-            first_regex='[^а-яёА-ЯЁ -]+',
-            second_regex='[^a-zA-Z -]+',
+            regex='[^а-яёА-ЯЁ]+|[^a-zA-Z]+',
             field='Имя'),
         ),
     )
@@ -37,9 +36,8 @@ class User(AbstractUser):
         verbose_name='Фамилия',
         max_length=settings.MAX_LEN_USERS_CHARFIELD,
         validators=(UserFieldsValidator(
-            first_regex='[^а-яёА-ЯЁ -]+',
-            second_regex='[^a-zA-Z -]+',
-            field='Имя'),
+            regex='[^а-яёА-ЯЁ]+|[^a-zA-Z]+',
+            field='Фамилия'),
         ),
     )
 

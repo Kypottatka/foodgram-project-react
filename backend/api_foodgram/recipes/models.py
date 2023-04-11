@@ -3,7 +3,7 @@ from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db.models import (CASCADE, SET_NULL, CharField, CheckConstraint,
                               DateTimeField, ForeignKey, ImageField,
-                              ManyToManyField, Model,
+                              SlugField, ManyToManyField, Model,
                               PositiveSmallIntegerField, Q, TextField,
                               UniqueConstraint)
 from django.db.models.functions import Length
@@ -20,6 +20,12 @@ class Tag(Model):
         verbose_name='Тэг',
         max_length=settings.MAX_LEN_TAGS_CHARFIELD,
         unique=True,
+        validators=[
+            RegexValidator(
+                r'^[a-zA-Zа-яёА-ЯЁ]+$',
+                'Имя тэга должно состоять только из букв'
+            )
+        ]
     )
     color = CharField(
         verbose_name='Цвет',
@@ -28,12 +34,12 @@ class Tag(Model):
         db_index=False,
         validators=[
             RegexValidator(
-                '^#([a-fA-F0-9]{6})',
+                '^(0x|0X)?[a-fA-F0-9]+$',
                 message='Поле должно содержать HEX-код выбранного цвета.'
             )
         ]
     )
-    slug = CharField(
+    slug = SlugField(
         verbose_name='Слаг тэга',
         max_length=64,
         unique=True,
@@ -56,7 +62,7 @@ class Ingredient(Model):
     )
     measurement_unit = CharField(
         verbose_name='Единицы измерения',
-        max_length=24,
+        max_length=settings.MAX_M_UNIT_LENGTH,
     )
 
     class Meta:
@@ -211,7 +217,7 @@ class Favorite(Model):
     user = ForeignKey(
         User,
         verbose_name='Пользователь',
-        related_name='favorites',
+        related_name='+',
         on_delete=CASCADE,
     )
     date_added = DateTimeField(
@@ -244,7 +250,7 @@ class ShoppingCart(Model):
     user = ForeignKey(
         User,
         verbose_name='Владелец списка',
-        related_name='carts',
+        related_name='+',
         on_delete=CASCADE,
     )
     date_added = DateTimeField(

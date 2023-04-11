@@ -126,10 +126,10 @@ DJOSER = {
         'user_list': ('api.permissions.OwnerUserOrReadOnly',),
     },
     'SERIALIZERS': {
-        'user': 'api.serializers.UserSerializer',
-        'user_list': 'api.serializers.UserSerializer',
-        'current_user': 'api.serializers.UserSerializer',
-        'user_create': 'api.serializers.UserSerializer',
+        'user': 'api.serializers.UserWithSubscriptionSerializer',
+        'user_list': 'api.serializers.UserWithSubscriptionSerializer',
+        'current_user': 'api.serializers.UserWithSubscriptionSerializer',
+        'user_create': 'api.serializers.UserWithSubscriptionSerializer',
     },
 }
 
@@ -168,6 +168,7 @@ MIN_COOKING_TIME = 1
 MAX_COOKING_TIME = 300
 MIN_AMOUNT_INGREDIENTS = 1
 MAX_AMOUNT_INGREDIENTS = 32
+MAX_M_UNIT_LENGTH = 24
 
 SEARCH_ING_NAME = 'name'
 FAVORITE = 'is_favorited'

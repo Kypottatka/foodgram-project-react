@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
@@ -8,7 +9,7 @@ from recipes.models import Ingredient, Recipe, Tag
 from users.models import User
 
 
-class UserSerializer(ModelSerializer):
+class UserWithSubscriptionSerializer(DjoserUserSerializer):
     is_subscribed = SerializerMethodField()
 
     class Meta:
@@ -69,7 +70,7 @@ class IngredientSerializer(ModelSerializer):
 
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True)
+    author = UserWithSubscriptionSerializer(read_only=True)
     ingredients = SerializerMethodField()
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
@@ -101,11 +102,11 @@ class RecipeSerializer(ModelSerializer):
 
     def get_is_favorited(self, recipe):
         user = self.context.get('view').request.user
-        return user.favorites.filter(recipe=recipe).exists()
+        return recipe.in_favorites.filter(user=user).exists()
 
     def get_is_in_shopping_cart(self, recipe):
         user = self.context.get('view').request.user
-        return user.carts.filter(recipe=recipe).exists()
+        return recipe.in_carts.filter(user=user).exists()
 
     def validate(self, data):
         tags_ids = self.initial_data.get('tags')
@@ -171,7 +172,7 @@ class RecipeSerializer(ModelSerializer):
         return recipe
 
 
-class SubscriptionSerializer(UserSerializer):
+class SubscriptionSerializer(UserWithSubscriptionSerializer):
     recipes = OptimizedRecipeSerializer(many=True, read_only=True)
     recipes_count = SerializerMethodField()
 

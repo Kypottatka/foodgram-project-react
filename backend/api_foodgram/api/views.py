@@ -17,9 +17,9 @@ from api.pagination import CustomPagination
 from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 from api.serializers import (IngredientSerializer, OptimizedRecipeSerializer,
                              RecipeSerializer, SubscriptionSerializer,
-                             TagSerializer, UserSerializer)
-from core.enums import Tuples, UrlQueries
-from core.filters import RecipeFilter
+                             TagSerializer, UserWithSubscriptionSerializer)
+from core.enums import Tuples
+from core.filters import RecipeFilter, IngredientFilter
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscriptions, User
 
@@ -69,7 +69,7 @@ class UserViewSet(DjoserUserViewSet):
         permission_classes=(AllowAny,)
     )
     def register(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserWithSubscriptionSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save()
@@ -94,22 +94,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
-
-    def get_queryset(self):
-        name = self.request.query_params.get(UrlQueries.SEARCH_ING_NAME)
-        queryset = self.queryset
-
-        if name:
-            name = name.lower()
-            start_queryset = list(queryset.filter(name__istartswith=name))
-            ingridients_set = set(start_queryset)
-            cont_queryset = queryset.filter(name__icontains=name)
-            start_queryset.extend(
-                [ing for ing in cont_queryset if ing not in ingridients_set]
-            )
-            queryset = start_queryset
-
-        return queryset
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(ModelViewSet):
@@ -127,7 +113,7 @@ class RecipeViewSet(ModelViewSet):
     )
     def favorite(self, request, pk):
         recipe = get_object_or_404(self.queryset, id=pk)
-        favorite = request.user.favorites.filter(recipe=recipe).first()
+        favorite = recipe.in_favorites.filter(user=request.user).first()
 
         if not favorite:
             Favorite.objects.create(user=request.user, recipe=recipe)
@@ -144,7 +130,7 @@ class RecipeViewSet(ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         recipe = get_object_or_404(self.queryset, id=pk)
-        shopping_cart = request.user.carts.filter(recipe=recipe).first()
+        shopping_cart = recipe.in_carts.filter(user=request.user).first()
 
         if not shopping_cart:
             ShoppingCart.objects.create(user=request.user, recipe=recipe)
@@ -160,7 +146,7 @@ class RecipeViewSet(ModelViewSet):
     )
     def download_shopping_cart(self, request):
         user = self.request.user
-        if not user.carts.exists():
+        if not Recipe.objects.filter(in_carts__user=user).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         filename, shopping_list = self.generate_shopping_list(user)
