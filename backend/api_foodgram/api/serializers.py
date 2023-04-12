@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.db.models import F
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
@@ -9,7 +8,7 @@ from recipes.models import Ingredient, Recipe, Tag
 from users.models import User
 
 
-class UserWithSubscriptionSerializer(DjoserUserSerializer):
+class UserWithSubscriptionSerializer(ModelSerializer):
     is_subscribed = SerializerMethodField()
 
     class Meta:
