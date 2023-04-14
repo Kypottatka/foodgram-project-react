@@ -105,12 +105,6 @@ class Recipe(Model):
         related_name='recipes',
         to='Tag',
     )
-    ingredients = ManyToManyField(
-        Ingredient,
-        verbose_name='Ингредиенты блюда',
-        related_name='recipes',
-        through='AmountIngredient',
-    )
     pub_date = DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
@@ -168,10 +162,10 @@ class AmountIngredient(Model):
     recipe = ForeignKey(
         Recipe,
         verbose_name='В каких рецептах',
-        related_name='ingredient',
+        related_name='ingredients',
         on_delete=CASCADE,
     )
-    ingredients = ForeignKey(
+    ingredient = ForeignKey(
         Ingredient,
         verbose_name='Связанные ингредиенты',
         related_name='+',
@@ -185,10 +179,6 @@ class AmountIngredient(Model):
                 settings.MIN_AMOUNT_INGREDIENTS,
                 'Нужно хоть какое-то количество.',
             ),
-            MaxValueValidator(
-                settings.MAX_AMOUNT_INGREDIENTS,
-                'Слишком много!',
-            ),
         ),
     )
 
@@ -198,7 +188,7 @@ class AmountIngredient(Model):
         ordering = ('recipe', )
         constraints = (
             UniqueConstraint(
-                fields=('recipe', 'ingredients', ),
+                fields=('recipe', 'ingredient', ),
                 name='\n%(app_label)s_%(class)s ingredient alredy added\n',
             ),
         )

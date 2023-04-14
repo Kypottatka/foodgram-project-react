@@ -1,10 +1,12 @@
 from django.core.exceptions import ValidationError
-from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import (
+    ModelSerializer, SerializerMethodField,
+    IntegerField, ReadOnlyField,
+)
 
 from core.services import recipe_ingredients_set
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from users.models import User
 
 
@@ -67,10 +69,29 @@ class IngredientSerializer(ModelSerializer):
         read_only_fields = '__all__',
 
 
+class AmountIngredientSerializer(ModelSerializer):
+    id = IntegerField(source="ingredient.id")
+    name = ReadOnlyField(source="ingredient.name")
+    measurement_unit = ReadOnlyField(
+        source="ingredient.measurement_unit"
+    )
+
+    class Meta:
+        model = AmountIngredient
+        fields = (
+            "id",
+            "name",
+            "measurement_unit",
+            "amount",
+        )
+
+
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserWithSubscriptionSerializer(read_only=True)
-    ingredients = SerializerMethodField()
+    ingredients = AmountIngredientSerializer(
+        many=True,
+    )
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
     image = Base64ImageField()
@@ -89,15 +110,6 @@ class RecipeSerializer(ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
         )
-
-    def get_ingredients(self, recipe):
-        ingredients = recipe.ingredients.values(
-            'id',
-            'name',
-            'measurement_unit',
-            amount=F('recipes__ingredient__amount')
-        )
-        return ingredients
 
     def get_is_favorited(self, recipe):
         user = self.context.get('view').request.user
@@ -164,7 +176,7 @@ class RecipeSerializer(ModelSerializer):
             recipe.tags.set(tags)
 
         if ingredients:
-            recipe.ingredients.clear()
+            AmountIngredient.objects.filter(recipe=recipe)
             recipe_ingredients_set(recipe, ingredients)
 
         recipe.save()
