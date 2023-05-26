@@ -20,7 +20,6 @@ services:
   backend:
     container_name: foodgram_backend
     image: kypottatka/foodgram_backend:latest
-    build: ../backend
     restart: always
     volumes:
       - static_dir:/app/static/
