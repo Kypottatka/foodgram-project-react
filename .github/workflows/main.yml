@@ -69,8 +69,8 @@ jobs:
             sudo docker-compose rm -f kypottatka/foodgram_backend
             sudo docker pull kypottatka/foodgram_backend:latest
 
-            rm .env
-            touch .env
+            sudo rm .env
+            sudo touch .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
