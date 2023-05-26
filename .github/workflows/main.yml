@@ -6,37 +6,6 @@ on:
     branches: [ master ]
 
 jobs:
-  copy_files_to_server:
-    name: Copy infra and docs
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Create projects directory
-      uses: garygrossgarten/github-action-ssh@release
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        privateKey: ${{ secrets.PRIVATE_KEY }}
-        command: cd projects && mkdir -p foodgram && mkdir -p foodgram/docs
-
-    - name: Copy infra files
-      uses: garygrossgarten/github-action-scp@release
-      with:
-          local: infra/
-          remote: /${{ secrets.USERNAME }}/projects/foodgram/
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
-
-    - name: Copy docs
-      uses: garygrossgarten/github-action-scp@release
-      with:
-          local: docs
-          remote: /${{ secrets.USERNAME }}/projects/foodgram/docs/
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
 
   build_push_backend_to_DockerHub:
     name: Building back image and pushing it to Docker Hub
@@ -85,34 +54,31 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     needs:
-      - copy_files_to_server
       - build_push_backend_to_DockerHub
       - build_push_frontend_to_DockerHub
     steps:
     - name: remote ssh commands to deploy
-      uses: garygrossgarten/github-action-ssh@release
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        privateKey: ${{ secrets.PRIVATE_KEY }}
-        command: |
-          cd projects/foodgram/
-          rm -f .env
-          touch .env
-          echo DEBUG=${{ secrets.DEBUG }} >> .env
-          echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-          echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-          echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+        script: |
+            sudo docker pull kypottatka/foodgram_backend:latest
+            sudo docker-compose stop
+            sudo docker-compose rm -f backend
+            rm .env
+            touch .env
+            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            sudo docker-compose up -d --build
 
-          sudo docker-compose stop
-          sudo docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs sudo docker rm
-          sudo docker rmi ${{ secrets.DOCKER_USER }}/foodgram_front
-          sudo docker rmi ${{ secrets.DOCKER_USER }}/foodgram_back
-          sudo docker-compose up -d
-          sudo docker image prune -a
 
   send_message:
     runs-on: ubuntu-latest
