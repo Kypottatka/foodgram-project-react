@@ -20,7 +20,6 @@ class CustomUserManager(BaseUserManager):
             password=None,
             **extra_fields
     ):
-
         email = self.normalize_email(email)
         user = self.model(
             email=email,
