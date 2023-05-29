@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import (
     ModelSerializer, SerializerMethodField,
@@ -8,6 +9,12 @@ from rest_framework.serializers import (
 from core.services import recipe_ingredients_set
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from users.models import User
+
+
+class UserCreateSerializer(BaseUserCreateSerializer):
+    class Meta(BaseUserCreateSerializer.Meta):
+        model = User
+        fields = ['email', 'username', 'first_name', 'last_name', 'password']
 
 
 class UserWithSubscriptionSerializer(ModelSerializer):
@@ -22,7 +29,6 @@ class UserWithSubscriptionSerializer(ModelSerializer):
             'first_name',
             'last_name',
             'is_subscribed',
-            'password',
         )
         extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = 'is_subscribed',
@@ -32,17 +38,6 @@ class UserWithSubscriptionSerializer(ModelSerializer):
         if user.is_anonymous or (user == obj):
             return False
         return user.subscriptions.filter(author=obj).exists()
-
-    def create(self, validated_data):
-        user = User(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
 
 
 class OptimizedRecipeSerializer(ModelSerializer):

@@ -126,10 +126,9 @@ DJOSER = {
         'user_list': ('api.permissions.OwnerUserOrReadOnly',),
     },
     'SERIALIZERS': {
-        'user': 'api.serializers.UserWithSubscriptionSerializer',
+        'user_create': 'api.serializers.UserCreateSerializer',
         'user_list': 'api.serializers.UserWithSubscriptionSerializer',
         'current_user': 'api.serializers.UserWithSubscriptionSerializer',
-        'user_create': 'api.serializers.UserWithSubscriptionSerializer',
     },
 }
 
@@ -139,10 +138,10 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / MEDIA_URL
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

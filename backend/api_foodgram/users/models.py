@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models import (CASCADE, CharField, CheckConstraint,
                               DateTimeField, EmailField, F, ForeignKey, Model,
                               Q, UniqueConstraint)
@@ -8,6 +8,31 @@ from django.db.models.functions import Length
 from core.validators import UserFieldsValidator
 
 CharField.register_lookup(Length)
+
+
+class CustomUserManager(BaseUserManager):
+    def create_user(
+            self,
+            email,
+            username,
+            first_name,
+            last_name,
+            password=None,
+            **extra_fields
+    ):
+
+        email = self.normalize_email(email)
+        user = self.model(
+            email=email,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            **extra_fields
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 
 class User(AbstractUser):
@@ -40,6 +65,8 @@ class User(AbstractUser):
             field='Фамилия'),
         ),
     )
+
+    objects = CustomUserManager()
 
     class Meta:
         verbose_name = 'Пользователь'
