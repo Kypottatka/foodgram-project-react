@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models import (CASCADE, CharField, CheckConstraint,
                               DateTimeField, EmailField, F, ForeignKey, Model,
                               Q, UniqueConstraint)
@@ -8,6 +8,57 @@ from django.db.models.functions import Length
 from core.validators import UserFieldsValidator
 
 CharField.register_lookup(Length)
+
+
+class CustomUserManager(BaseUserManager):
+    def create_user(
+        self,
+        username,
+        email=None,
+        first_name=None,
+        last_name=None,
+        password=None,
+        **extra_fields
+    ):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(
+            email=email,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            **extra_fields
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(
+        self,
+        username,
+        email,
+        first_name,
+        last_name,
+        password=None,
+        **extra_fields
+    ):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(
+            email,
+            username,
+            first_name,
+            last_name,
+            password,
+            **extra_fields
+        )
 
 
 class User(AbstractUser):
@@ -40,6 +91,11 @@ class User(AbstractUser):
             field='Фамилия'),
         ),
     )
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'Пользователь'

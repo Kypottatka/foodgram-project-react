@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import (
     ModelSerializer, SerializerMethodField,
@@ -9,12 +8,6 @@ from rest_framework.serializers import (
 from core.services import recipe_ingredients_set
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from users.models import User
-
-
-class UserCreateSerializer(BaseUserCreateSerializer):
-    class Meta(BaseUserCreateSerializer.Meta):
-        model = User
-        fields = ['email', 'username', 'first_name', 'last_name', 'password']
 
 
 class UserWithSubscriptionSerializer(ModelSerializer):

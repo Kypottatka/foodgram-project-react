@@ -126,10 +126,8 @@ DJOSER = {
         'user_list': ('api.permissions.OwnerUserOrReadOnly',),
     },
     'SERIALIZERS': {
-        'user': 'api.serializers.UserWithSubscriptionSerializer',
         'user_list': 'api.serializers.UserWithSubscriptionSerializer',
         'current_user': 'api.serializers.UserWithSubscriptionSerializer',
-        'user_create': 'api.serializers.UserCreateSerializer',
     },
 }
 
