@@ -16,11 +16,6 @@ class IngredientInline(TabularInline):
     extra = 2
 
 
-@register(AmountIngredient)
-class LinksAdmin(ModelAdmin):
-    pass
-
-
 @register(Ingredient)
 class IngredientAdmin(ModelAdmin):
     list_display = (
