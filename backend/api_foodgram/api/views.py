@@ -20,7 +20,8 @@ from api.serializers import (IngredientSerializer, OptimizedRecipeSerializer,
                              TagSerializer, UserWithSubscriptionSerializer)
 from core.enums import Tuples
 from core.filters import RecipeFilter, IngredientFilter
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from recipes.models import (AmountIngredient, Favorite,
+                            Ingredient, Recipe, ShoppingCart, Tag)
 from users.models import Subscriptions, User
 
 
@@ -160,16 +161,17 @@ class RecipeViewSet(ModelViewSet):
             f'{dt.now().strftime(settings.DATE_TIME_FORMAT)}\n'
         ]
 
-        ingredients = Ingredient.objects.filter(
-            recipe__recipe__in_carts__user=user
+        ingredients = AmountIngredient.objects.filter(
+            recipe__in_carts__user=user
         ).values(
-            'name',
-            measurement=F('measurement_unit')
-        ).annotate(amount=Sum('recipe__amount'))
+            'ingredient__name',
+            measurement=F('ingredient__measurement_unit')
+        ).annotate(amount=Sum('amount'))
 
         for ing in ingredients:
             shopping_list.append(
-                f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}'
+                f'{ing["ingredient__name"]}: '
+                f'{ing["amount"]} {ing["measurement"]}'
             )
 
         shopping_list.append('\nПосчитано в Foodgram')

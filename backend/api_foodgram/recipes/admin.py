@@ -1,4 +1,3 @@
-from django.contrib import messages
 from django.contrib.admin import (ModelAdmin, TabularInline, display, register,
                                   site)
 from django.core.handlers.wsgi import WSGIRequest
@@ -55,15 +54,6 @@ class RecipeAdmin(ModelAdmin):
     inlines = (IngredientInline,)
     save_on_top = True
     empty_value_display = EMPTY_VALUE_DISPLAY
-
-    def save_model(self, request, obj, form, change):
-        if not obj.ingredients.exists():
-            messages.error(
-                request,
-                "Рецепт должен иметь хотя бы один ингредиент!"
-            )
-            return
-        super().save_model(request, obj, form, change)
 
     def get_image(self, obj: Recipe) -> SafeString:
         return mark_safe(f'<img src={obj.image.url} width="80" hieght="30"')
