@@ -3,7 +3,7 @@ from django.contrib.admin import (ModelAdmin, TabularInline, display, register,
 from django.core.handlers.wsgi import WSGIRequest
 from django.utils.html import format_html
 from django.utils.safestring import SafeString, mark_safe
-from recipes.forms import TagForm
+from recipes.forms import TagForm, RecipeForm
 from recipes.models import (AmountIngredient, ShoppingCart, Favorite,
                             Ingredient, Recipe, Tag)
 
@@ -34,6 +34,7 @@ class IngredientAdmin(ModelAdmin):
 
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
+    form = RecipeForm
     list_display = (
         'name', 'author', 'get_image', 'count_favorites',
     )

@@ -36,8 +36,8 @@ class CustomUserManager(BaseUserManager):
 
     def create_superuser(
         self,
-        username,
         email,
+        username,
         first_name,
         last_name,
         password=None,
