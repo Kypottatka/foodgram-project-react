@@ -1,4 +1,5 @@
 from django.forms import ModelForm
+from django.forms.models import BaseInlineFormSet
 from django.forms.widgets import TextInput
 from django.core.exceptions import ValidationError
 from recipes.models import Tag, Recipe
@@ -27,6 +28,19 @@ class RecipeForm(ModelForm):
     def clean(self):
         super().clean()
         if self.cleaned_data.get('ingredients'):
+            raise ValidationError(
+                'Рецепт должен иметь хотя бы один ингредиент.'
+            )
+
+
+class AmountIngredientInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        count = 0
+        for form in self.forms:
+            if form.cleaned_data and not form.cleaned_data.get('DELETE'):
+                count += 1
+        if count < 1:
             raise ValidationError(
                 'Рецепт должен иметь хотя бы один ингредиент.'
             )

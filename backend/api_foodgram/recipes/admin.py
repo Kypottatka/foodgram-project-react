@@ -3,7 +3,7 @@ from django.contrib.admin import (ModelAdmin, TabularInline, display, register,
 from django.core.handlers.wsgi import WSGIRequest
 from django.utils.html import format_html
 from django.utils.safestring import SafeString, mark_safe
-from recipes.forms import TagForm, RecipeForm
+from recipes.forms import TagForm, RecipeForm, AmountIngredientInlineFormSet
 from recipes.models import (AmountIngredient, ShoppingCart, Favorite,
                             Ingredient, Recipe, Tag)
 
@@ -14,6 +14,7 @@ EMPTY_VALUE_DISPLAY = 'Значение не указано'
 class IngredientInline(TabularInline):
     model = AmountIngredient
     extra = 2
+    formset = AmountIngredientInlineFormSet
 
 
 @register(Ingredient)
