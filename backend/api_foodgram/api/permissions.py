@@ -25,6 +25,7 @@ class AuthorStaffOrReadOnly(BanPermission):
     ) -> bool:
         return (
             request.method in SAFE_METHODS
+            or request.user.is_authenticated
             and request.user.is_active
             and (
                 request.user == obj.author
