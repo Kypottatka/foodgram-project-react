@@ -1,12 +1,12 @@
 # Foodgram
 
-![workflow](https://github.com/Kypottatka/Foodgram/actions/workflows/main.yml/badge.svg)
+![workflow](https://github.com/Kypottatka/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 ***
 [Вопросы](https://github.com/Kypottatka/foodgram-project-react/issues).
 ***
 
-## Tecnhologies
+## Technologies
 
 - Python 3.11
 - Django 4.0
@@ -19,16 +19,9 @@
 - Docker
 - Postgres
 
-## https://http://foodgram-tae.ddns.net/
+## http://foodgram-tae.ddns.net/
 
-Here you can share recipes of dishes, add them to favorites and display a shopping list for cooking your favorite dishes.
-To preserve order - only administrators are allowed to create tags and ingredients.
-
-There is also an API. To view the available paths, follow the link: **https://foodgram-tae.ddns.net/api/**.
-
-And the api documentation is here: **https://foodgram-tae.ddns.net/api/docs/**.
-
-### To deploy this project need the next actions
+### To deploy this project, the following actions are needed
 
 - Download project with SSH (actually you only need the folder 'infra/')
 
@@ -72,7 +65,7 @@ mkdir foodgram && cd foodgram/
 touch .env
 ```
 
-- Fill in the env-file like it:
+- Fill in the env-file like this:
 
 ```text
 DEBUG=False
@@ -99,8 +92,7 @@ scp -r infra/* <server user>@<server IP>:/home/<server user>/foodgram/
 sudo docker-compose up -d
 ```
 
-Wait a few seconds...
-Your service is work!
+Wait a few seconds... Your service should now be working!
 
 **Enjoy your meal!**
 
@@ -110,8 +102,7 @@ Oh, I'm sorry. You also need to create the first account for the admin panel usi
 sudo docker exec -it app python manage.py createsuperuser
 ```
 
-And if you want, you can use the list of ingredients offered by us to write recipes.
-Upload it to the database with the following command:
+And if you want, you can use the list of ingredients that we offer to write recipes. Upload this list to the database using the following command:
 
 ```text
 sudo docker exec -it foodgram-app python manage.py loaddata scripts/ingredients_transformed.json
